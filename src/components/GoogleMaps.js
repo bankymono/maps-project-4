@@ -7,14 +7,16 @@ class GoogleMaps extends Component {
         markers : [],
         map: ''
         }
+        
         this.googleMapRef = createRef()
+        this.showListingsRef = createRef()
+        this.hideListingsRef = createRef()
         
     }    
     
     componentDidMount =() =>{
         window.createGoogleMap = this.createGoogleMap
         const googleMapScript = document.createElement('script')
-        
 
         googleMapScript.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyC3sXvuy2Kmo5TLamDbHmGx-obyLBNh3tc&v=3&callback=createGoogleMap"
         googleMapScript.async = true
@@ -54,7 +56,6 @@ class GoogleMaps extends Component {
             var title = locations[i].title
 
             const marker = new window.google.maps.Marker({
-                map,
                 position,
                 title,
                 animation:window.google.maps.Animation.DROP,
@@ -69,7 +70,26 @@ class GoogleMaps extends Component {
                 window.populateInfoWindow(this,largeInfoWindow)
             })
         }
-        map.fitBounds(bounds)
+        this.showListingsRef.current.addEventListener('click',this.showListings)
+        this.hideListingsRef.current.addEventListener('click',this.hideListings)
+    }
+    
+    showListings = () =>{
+        const bounds = new window.google.maps.LatLngBounds()
+        
+            this.setState((prevState)=>({
+                markers:prevState.markers.map(marker =>marker.setMap(this.state.map))
+            }),(i)=>{ bounds.extend(this.state.markers[i].position)})            
+        
+        bounds.fitBounds(bounds)
+    }
+
+    hideListingsm =() =>{
+        for (var i = 0; i < this.state.markers;++i){
+            this.setState((prevState,i)=>({
+                markers:[...prevState.markers[i].setMap(null)]
+            }))
+        }
     }
 
     populateInfoWindow = (marker,infoWindow) =>{
@@ -85,11 +105,24 @@ class GoogleMaps extends Component {
 
     render() {
         return (
-            <div 
-            id="map"
-            ref={this.googleMapRef}
-            >                
+            <div>
+                <div className='container'>
+                    <div className="opptions-box">
+                        <h1>Find Your New NYC Home</h1>
+                        <div>
+                            <input ref={this.showListingsRef} id="show-listings" type="button" value="Show Listings" />
+                            <input ref={this.hideListingsRef} id="hide-listings" type="button" value="Hide Listings" />
+                        </div>
+                    </div>
+
+                </div>
+                <div 
+                    id="map"
+                    ref={this.googleMapRef}
+                >                
+                </div>
             </div>
+            
         )
     }
 }
