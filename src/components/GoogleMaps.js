@@ -49,22 +49,20 @@ class GoogleMaps extends Component {
           ]
 
         const largeInfoWindow = new window.google.maps.InfoWindow()
-        const bounds = new window.google.maps.LatLngBounds()
 
         for (var i = 0; i < locations.length; ++i){
             var position = locations[i].location
             var title = locations[i].title
 
             const marker = new window.google.maps.Marker({
-                position,
-                title,
+                position:position,
+                title:title,
                 animation:window.google.maps.Animation.DROP,
                 id:i
             })
-            this.setState(prevState=>({
-                markers:[...prevState.markers,marker]
-            }))
-            bounds.extend(marker.position)
+            this.setState(prevState=>{
+               return {markers:[...prevState.markers,marker]}
+            })
             window.populateInfoWindow = this.populateInfoWindow
             marker.addListener('click',function(){
                 window.populateInfoWindow(this,largeInfoWindow)
@@ -76,20 +74,31 @@ class GoogleMaps extends Component {
     
     showListings = () =>{
         const bounds = new window.google.maps.LatLngBounds()
-        
-            this.setState((prevState)=>({
-                markers:prevState.markers.map(marker =>marker.setMap(this.state.map))
-            }),(i)=>{ bounds.extend(this.state.markers[i].position)})            
-        
-        bounds.fitBounds(bounds)
+
+        this.setState(prevState=>{
+            return {
+                markers:prevState.markers.map(marker =>{
+                    marker.setMap(this.state.map)
+                    return marker
+                })
+            }
+        },()=>{
+            this.state.markers.map(marker=>bounds.extend(marker.position))
+        })
+
+        this.state.map.fitBounds(bounds)
+
     }
 
-    hideListingsm =() =>{
-        for (var i = 0; i < this.state.markers;++i){
-            this.setState((prevState,i)=>({
-                markers:[...prevState.markers[i].setMap(null)]
-            }))
-        }
+    hideListings =() =>{
+        this.setState(prevState=>{
+            return {
+                markers: prevState.markers.map(marker=>{
+                    marker.setMap(null)
+                    return marker
+                })
+            }
+        })
     }
 
     populateInfoWindow = (marker,infoWindow) =>{
@@ -108,7 +117,7 @@ class GoogleMaps extends Component {
             <div>
                 <div className='container'>
                     <div className="opptions-box">
-                        <h1>Find Your New NYC Home</h1>
+                        <h5>Find Your New NYC Home</h5>
                         <div>
                             <input ref={this.showListingsRef} id="show-listings" type="button" value="Show Listings" />
                             <input ref={this.hideListingsRef} id="hide-listings" type="button" value="Hide Listings" />
